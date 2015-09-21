@@ -569,7 +569,7 @@ static int bitmap_read_sb(struct bitmap *bitmap)
 		goto out_no_sb;
 	}
 	/* page 0 is the superblock, read it... */
-	sb_page = alloc_page(GFP_KERNEL);
+	sb_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
 	if (!sb_page)
 		return -ENOMEM;
 	bitmap->storage.sb_page = sb_page;
@@ -658,7 +658,7 @@ re_read:
 			goto out;
 		}
 		events = le64_to_cpu(sb->events);
-		if (!nodes && (events < bitmap->mddev->events)) {
+		if (err == 0 && !nodes && (events < bitmap->mddev->events)) {
 			printk(KERN_INFO
 			       "%s: bitmap file is out of date (%llu < %llu) "
 			       "-- forcing full recovery\n",
