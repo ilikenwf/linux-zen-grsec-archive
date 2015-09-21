@@ -29,6 +29,21 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
 
 	if ((from + num <= from) || (from + num > IO_BITMAP_BITS))
 		return -EINVAL;
+#ifdef CONFIG_SCHED_BFS_AUTOISO
+	if (turn_on) {
+		struct sched_param param = { .sched_priority = 0 };
+		if (!capable(CAP_SYS_RAWIO))
+			return -EPERM;
+#ifdef CONFIG_GRKERNSEC_IO
+	if (turn_on && grsec_disable_privio) {
+		gr_handle_ioperm();
+		return -ENODEV;
+	}
+#endif
+		/* Start X as SCHED_ISO */
+		sched_setscheduler_nocheck(current, SCHED_ISO, &param);
+	}
+#else
 	if (turn_on && !capable(CAP_SYS_RAWIO))
 		return -EPERM;
 #ifdef CONFIG_GRKERNSEC_IO
@@ -36,6 +51,7 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
 		gr_handle_ioperm();
 		return -ENODEV;
 	}
+#endif
 #endif
 
 	/*
@@ -110,6 +126,9 @@ SYSCALL_DEFINE1(iopl, unsigned int, level)
 		return -EINVAL;
 	/* Trying to gain more privileges? */
 	if (level > old) {
+#ifdef CONFIG_SCHED_BFS_AUTOISO
+		struct sched_param param = { .sched_priority = 0 };
+#endif
 		if (!capable(CAP_SYS_RAWIO))
 			return -EPERM;
 #ifdef CONFIG_GRKERNSEC_IO
@@ -117,6 +136,10 @@ SYSCALL_DEFINE1(iopl, unsigned int, level)
 			gr_handle_iopl();
 			return -ENODEV;
 		}
+#endif
+#ifdef CONFIG_SCHED_BFS_AUTOISO
+		/* Start X as SCHED_ISO */
+		sched_setscheduler_nocheck(current, SCHED_ISO, &param);
 #endif
 	}
 	regs->flags = (regs->flags & ~X86_EFLAGS_IOPL) | (level << 12);
