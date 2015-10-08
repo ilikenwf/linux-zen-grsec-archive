@@ -940,4 +940,11 @@ config INTEL_PMC_IPC
 	The PMC is an ARC processor which defines IPC commands for communication
 	with other entities in the CPU.
 
+config SURFACE_BUTTON
+   tristate "Surface Pro Button Driver"
+   depends on ACPI
+   ---help---
+     This driver provides button support for the surface pro tablet, including
+     Power Button, Home Button, Volume Button.
+
 endif # X86_PLATFORM_DEVICES
