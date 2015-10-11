@@ -1,7 +1,7 @@
 VERSION = 4
 PATCHLEVEL = 2
 SUBLEVEL = 3
-EXTRAVERSION = -zen-grsec
+EXTRAVERSION = -zen
 NAME = Inflammable Inglenook
 
 # *DOCUMENTATION*
