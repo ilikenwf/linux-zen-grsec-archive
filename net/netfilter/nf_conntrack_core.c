@@ -320,12 +320,13 @@ out_free:
 }
 EXPORT_SYMBOL_GPL(nf_ct_tmpl_alloc);
 
-static void nf_ct_tmpl_free(struct nf_conn *tmpl)
+void nf_ct_tmpl_free(struct nf_conn *tmpl)
 {
 	nf_ct_ext_destroy(tmpl);
 	nf_ct_ext_free(tmpl);
 	kfree(tmpl);
 }
+EXPORT_SYMBOL_GPL(nf_ct_tmpl_free);
 
 static void
 destroy_conntrack(struct nf_conntrack *nfct)
@@ -1753,6 +1754,10 @@ void nf_conntrack_init_end(void)
 #define DYING_NULLS_VAL		((1<<30)+1)
 #define TEMPLATE_NULLS_VAL	((1<<30)+2)
 
+#ifdef CONFIG_GRKERNSEC_HIDESYM
+static atomic_unchecked_t conntrack_cache_id = ATOMIC_INIT(0);
+#endif
+
 int nf_conntrack_init_net(struct net *net)
 {
 	int ret = -ENOMEM;
@@ -1777,7 +1782,11 @@ int nf_conntrack_init_net(struct net *net)
 	if (!net->ct.stat)
 		goto err_pcpu_lists;
 
+#ifdef CONFIG_GRKERNSEC_HIDESYM
+	net->ct.slabname = kasprintf(GFP_KERNEL, "nf_conntrack_%08x", atomic_inc_return_unchecked(&conntrack_cache_id));
+#else
 	net->ct.slabname = kasprintf(GFP_KERNEL, "nf_conntrack_%p", net);
+#endif
 	if (!net->ct.slabname)
 		goto err_slabname;
 
