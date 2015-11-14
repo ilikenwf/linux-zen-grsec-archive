@@ -1158,7 +1158,7 @@ config CGROUP_WRITEBACK
 endif # CGROUPS
 
 config CHECKPOINT_RESTORE
-	bool "Checkpoint/restore support" if EXPERT
+	bool "Checkpoint/restore support"
 	select PROC_CHILDREN
 	depends on !GRKERNSEC
 	default n
