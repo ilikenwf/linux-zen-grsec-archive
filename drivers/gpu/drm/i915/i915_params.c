@@ -49,6 +49,7 @@ struct i915_params i915 __read_mostly = {
 	.disable_display = 0,
 	.enable_cmd_parser = 1,
 	.disable_vtd_wa = 0,
+	.enable_hd_vgaarb = false,
 	.use_mmio_flip = 0,
 	.mmio_debug = 0,
 	.verbose_state_checks = 1,
@@ -168,6 +169,10 @@ MODULE_PARM_DESC(disable_vtd_wa, "Disable all VT-d workarounds (default: false)"
 module_param_named(enable_cmd_parser, i915.enable_cmd_parser, int, 0600);
 MODULE_PARM_DESC(enable_cmd_parser,
 		 "Enable command parsing (1=enabled [default], 0=disabled)");
+
+module_param_named(enable_hd_vgaarb, i915.enable_hd_vgaarb, bool, 0444);
+MODULE_PARM_DESC(enable_hd_vgaarb,
+	"Enable support for VGA arbitration on Intel HD IGD. (default: false)");
 
 module_param_named(use_mmio_flip, i915.use_mmio_flip, int, 0600);
 MODULE_PARM_DESC(use_mmio_flip,
