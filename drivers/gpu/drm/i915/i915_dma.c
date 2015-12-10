@@ -402,20 +402,10 @@ static int i915_load_modeset_init(struct drm_device *dev)
 	 * If we are a secondary display controller (!PCI_DISPLAY_CLASS_VGA),
 	 * then we do not take part in VGA arbitration and the
 	 * vga_client_register() fails with -ENODEV.
-	 *
-	 * NB.  The set_decode callback here actually only works on GMCH
-	 * devices, on newer HD devices we can only disable VGA MMIO space.
-	 * Disabling VGA I/O space requires disabling I/O in the PCI command
-	 * register.  Nonetheless, we like to pretend that we participate in
-	 * VGA arbitration and can dynamically disable VGA I/O space because
-	 * this makes X happy, even though it's a complete lie.
 	 */
-	if (!i915.enable_hd_vgaarb || !HAS_PCH_SPLIT(dev)) {
-		ret = vga_client_register(dev->pdev, dev, NULL,
-					  i915_vga_set_decode);
-		if (ret && ret != -ENODEV)
-			goto out;
-	}
+	ret = vga_client_register(dev->pdev, dev, NULL, i915_vga_set_decode);
+	if (ret && ret != -ENODEV)
+		goto out;
 
 	intel_register_dsm_handler();
 
@@ -455,12 +445,6 @@ static int i915_load_modeset_init(struct drm_device *dev)
 	ret = intel_fbdev_init(dev);
 	if (ret)
 		goto cleanup_gem;
-
-	/*
-	 * Must do this after fbcon init so that
-	 * vgacon_save_screen() works during the handover.
-	 */
-	i915_disable_vga_mem(dev);
 
 	/* Only enable hotplug handling once the fbdev is fully set up. */
 	intel_hpd_init(dev_priv);
